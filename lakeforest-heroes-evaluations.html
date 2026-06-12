@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LFH Evals">
 <meta name="theme-color" content="#0d2240">
-<link rel="apple-touch-icon" href="heroes-logo.png">
+<link rel="apple-touch-icon" href="https://joshmnorris.github.io/lfh-evals/heroes-logo.png">
 <link rel="manifest" id="pwa-manifest">
 <style>
   :root {
@@ -1266,8 +1266,8 @@ loadData().then(() => {
     background_color: '#0d2240',
     theme_color: '#0d2240',
     icons: [
-      { src: 'heroes-logo.png', sizes: '192x192', type: 'image/png' },
-      { src: 'heroes-logo.png', sizes: '512x512', type: 'image/png' }
+      { src: 'https://joshmnorris.github.io/lfh-evals/heroes-logo.png', sizes: '192x192', type: 'image/png' },
+      { src: 'https://joshmnorris.github.io/lfh-evals/heroes-logo.png', sizes: '512x512', type: 'image/png' }
     ]
   };
   const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
@@ -1297,6 +1297,15 @@ self.addEventListener('fetch', e => {
   const swBlob = new Blob([swCode], { type: 'application/javascript' });
   navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
 }
+
+// ── Tell Wix iframe to resize to full content height ─────────────────────────
+function notifyParentHeight() {
+  const h = document.documentElement.scrollHeight;
+  window.parent.postMessage({ type: 'lfh-height', height: h }, '*');
+}
+const _resizeObserver = new ResizeObserver(() => notifyParentHeight());
+_resizeObserver.observe(document.body);
+notifyParentHeight();
 </script>
 </body>
 </html>
