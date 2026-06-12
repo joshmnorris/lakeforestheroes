@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lake Forest Heroes — Select Evaluations 2026</title>
+
+<!-- PWA / Add to Home Screen -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LFH Evals">
+<meta name="theme-color" content="#0d2240">
+<link rel="apple-touch-icon" href="heroes-logo.png">
+<link rel="manifest" id="pwa-manifest">
+<style>
+  :root {
+    --navy: #0d2240;
+    --red:  #c8102e;
+    --gold: #f5c518;
+    --light-bg: #f4f6f9;
+    --card-bg: #ffffff;
+    --border: #dde3ec;
+    --text: #1a2332;
+    --muted: #6b7a8d;
+    --success: #22803e;
+    --radius: 10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--light-bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ── */
+  header {
+    background: var(--navy); color: #fff;
+    padding: 16px 24px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.35);
+  }
+  .logo-wrap { flex-shrink:0; width:64px; height:64px; }
+  .logo-wrap img { width:100%; height:100%; object-fit:contain; border-radius:6px; }
+  header .title-block h1 { font-size:1.5rem; font-weight:800; line-height:1.1; }
+  header .title-block p { font-size:.82rem; color:var(--gold); letter-spacing:.06em; text-transform:uppercase; margin-top:3px; }
+  .header-right { margin-left:auto; display:flex; gap:10px; align-items:center; }
+  .mode-btn {
+    padding:8px 18px; border-radius:8px; font-weight:700; font-size:.85rem;
+    cursor:pointer; border:2px solid rgba(255,255,255,.4); background:transparent; color:#fff;
+    transition:all .15s;
+  }
+  .mode-btn:hover, .mode-btn.active { background:#fff; color:var(--navy); border-color:#fff; }
+
+  /* ── Coach bar ── */
+  .coach-bar {
+    background: var(--red); padding:10px 24px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .coach-bar label { color:#fff; font-weight:600; font-size:.88rem; white-space:nowrap; }
+  .coach-bar input {
+    padding:6px 12px; border:none; border-radius:6px;
+    font-size:.9rem; width:180px;
+  }
+  .btn-sm {
+    background:var(--navy); color:#fff; border:none;
+    padding:6px 16px; border-radius:6px; cursor:pointer; font-weight:600; font-size:.83rem;
+  }
+  .btn-sm:hover { background:#1a3a60; }
+  #coach-active { color:var(--gold); font-weight:700; font-size:.9rem; }
+  .sync-status { font-size:.8rem; font-weight:600; padding:4px 10px; border-radius:12px; }
+  .sync-status.loading { background:rgba(255,255,255,.2); color:#fff; }
+  .sync-status.loading::before { content:'⏳ Syncing…'; }
+  .sync-status.ok { background:rgba(34,128,62,.3); color:#afffcc; }
+  .sync-status.ok::before { content:'✓ Synced'; }
+  .sync-status.error { background:rgba(200,16,46,.4); color:#ffc0c0; }
+  .sync-status.error::before { content:'⚠ Sync error'; }
+
+  /* ── Main ── */
+  main { max-width:1200px; margin:0 auto; padding:22px 16px; }
+
+  /* ── Age tabs ── */
+  .tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .tab-btn {
+    background:var(--card-bg); border:2px solid var(--border);
+    border-radius:8px 8px 0 0; padding:9px 20px;
+    font-weight:700; font-size:.92rem; cursor:pointer; color:var(--muted); transition:all .15s;
+  }
+  .tab-btn:hover { border-color:var(--navy); color:var(--navy); }
+  .tab-btn.active { background:var(--navy); border-color:var(--navy); color:#fff; }
+
+  /* ── Cards ── */
+  .card {
+    background:var(--card-bg); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px; margin-bottom:20px;
+    box-shadow:0 1px 5px rgba(0,0,0,.06);
+  }
+  .card h2 {
+    font-size:1rem; color:var(--navy); margin-bottom:14px;
+    border-bottom:2px solid var(--gold); padding-bottom:7px;
+  }
+
+  /* ── Time slot filter ── */
+  .slot-filter { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .slot-filter label { font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+  .slot-filter select {
+    border:1px solid var(--border); border-radius:6px; padding:6px 10px;
+    font-size:.88rem; background:#fff; color:var(--text); cursor:pointer;
+  }
+  .slot-filter select:focus { outline:none; border-color:var(--navy); }
+  .slot-count { font-size:.78rem; color:var(--muted); }
+
+  /* ── Player chips ── */
+  .player-chips { display:flex; gap:7px; flex-wrap:wrap; }
+  .player-chip {
+    background:#eaf0fb; border:1px solid #c0d0e8; border-radius:20px;
+    padding:4px 12px; font-size:.82rem; cursor:pointer; color:var(--navy);
+    font-weight:600; transition:all .12s; white-space:nowrap;
+  }
+  .player-chip:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .player-chip.evaluated { background:#d4edda; border-color:#8dc69e; color:var(--success); }
+
+  /* ── Form ── */
+  .form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:14px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field label { font-size:.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .field input, .field select {
+    border:1px solid var(--border); border-radius:6px; padding:7px 10px;
+    font-size:.9rem; color:var(--text); background:#fff; transition:border .15s;
+  }
+  .field input:focus, .field select:focus { outline:none; border-color:var(--navy); }
+
+  .skills-grid {
+    display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;
+    background:#f8fafc; border:1px solid var(--border); border-radius:8px;
+    padding:14px; margin-bottom:14px;
+  }
+  .field.narrow select { width:74px; }
+  select.score { text-align:center; font-weight:700; }
+
+  .totals-box {
+    display:flex; gap:12px; align-items:center; margin-left:auto;
+    background:var(--navy); border-radius:10px; padding:8px 16px;
+    align-self:flex-end;
+  }
+  .totals-box .t-label { font-size:.7rem; color:rgba(255,255,255,.65); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .totals-box .t-val { font-size:1.3rem; font-weight:900; color:var(--gold); line-height:1; }
+  .totals-divider { width:1px; background:rgba(255,255,255,.2); align-self:stretch; }
+
+  .btn-primary {
+    background:var(--navy); color:#fff; border:none;
+    padding:10px 26px; border-radius:8px; font-weight:700; font-size:.92rem; cursor:pointer;
+  }
+  .btn-primary:hover { background:#1a3a60; }
+  .btn-danger {
+    background:#fff; color:var(--red); border:2px solid var(--red);
+    padding:5px 12px; border-radius:6px; font-weight:700; font-size:.8rem; cursor:pointer;
+  }
+  .btn-danger:hover { background:var(--red); color:#fff; }
+  .btn-export {
+    background:var(--success); color:#fff; border:none;
+    padding:8px 18px; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer;
+  }
+  .btn-export:hover { background:#1a6130; }
+
+  .notice {
+    background:#fff8e1; border:1px solid var(--gold); border-radius:8px;
+    padding:9px 14px; font-size:.84rem; color:#5a4a00; margin-bottom:14px;
+  }
+
+  /* ── Results table ── */
+  .results-toolbar {
+    display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;
+  }
+  .results-toolbar h2 { margin:0; border:none; padding:0; flex:1; font-size:1rem; color:var(--navy); }
+  .view-toggle { display:flex; gap:0; border:2px solid var(--border); border-radius:8px; overflow:hidden; }
+  .view-toggle button {
+    background:#fff; border:none; padding:6px 14px; font-size:.82rem; font-weight:700;
+    color:var(--muted); cursor:pointer; transition:all .12s;
+  }
+  .view-toggle button.active { background:var(--navy); color:#fff; }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:.84rem; }
+  thead th {
+    background:var(--navy); color:#fff; padding:8px 9px;
+    text-align:left; font-weight:700; white-space:nowrap;
+  }
+  thead th.center { text-align:center; }
+  thead th.avg-col { background:#1a3a60; }
+  .group-header td {
+    background:#eef3fb; font-weight:800; color:var(--navy);
+    padding:7px 10px; font-size:.82rem; border-bottom:2px solid var(--border);
+  }
+  tbody tr:nth-child(even):not(.group-header) { background:#f4f7fc; }
+  tbody tr:hover:not(.group-header) { background:#eaf0fb; }
+  tbody td { padding:7px 9px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  tbody td.center { text-align:center; }
+
+  .rank-badge {
+    display:inline-block; width:24px; height:24px; border-radius:50%;
+    font-weight:800; font-size:.78rem; text-align:center; line-height:24px; color:#fff;
+  }
+  .rank-1 { background:#c8a400; }
+  .rank-2 { background:#9e9e9e; }
+  .rank-3 { background:#b5622e; }
+  .rank-other { background:var(--navy); }
+
+  .score-cell { font-weight:700; text-align:center; }
+  .total-cell { font-weight:800; font-size:.95rem; color:var(--navy); text-align:center; }
+  .avg-cell { font-weight:800; font-size:.95rem; color:var(--red); text-align:center; background:#fef9f0; }
+  .coach-cell { color:var(--muted); font-size:.8rem; }
+  .allstar-yes { color:var(--success); font-weight:700; }
+
+  .empty-state { text-align:center; padding:36px 20px; color:var(--muted); font-size:.92rem; }
+
+  /* ── Manager modal ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.55); z-index:1000; align-items:center; justify-content:center;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:#fff; border-radius:14px; padding:32px; width:100%; max-width:420px;
+    box-shadow:0 10px 40px rgba(0,0,0,.3); position:relative;
+  }
+  .modal h3 { font-size:1.2rem; color:var(--navy); margin-bottom:6px; }
+  .modal p { font-size:.85rem; color:var(--muted); margin-bottom:20px; }
+  .modal .field { margin-bottom:14px; }
+  .modal .field input, .modal .field select { width:100%; }
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  .btn-cancel { background:#fff; color:var(--muted); border:2px solid var(--border); padding:8px 20px; border-radius:8px; font-weight:700; cursor:pointer; }
+  .modal-error { color:var(--red); font-size:.82rem; margin-top:8px; display:none; }
+
+  /* ── Manager view ── */
+  #manager-view { display:none; }
+  #manager-view.open { display:block; }
+  .manager-header {
+    background:linear-gradient(135deg, var(--navy), #1a3a60);
+    color:#fff; border-radius:var(--radius); padding:18px 22px;
+    margin-bottom:20px; display:flex; align-items:center; gap:16px;
+  }
+  .manager-header .mh-info h3 { font-size:1.1rem; font-weight:800; }
+  .manager-header .mh-info p { font-size:.82rem; color:rgba(255,255,255,.7); margin-top:2px; }
+  .manager-header .mh-stats { margin-left:auto; display:flex; gap:20px; text-align:center; }
+  .manager-header .stat-val { font-size:1.5rem; font-weight:900; color:var(--gold); }
+  .manager-header .stat-label { font-size:.72rem; color:rgba(255,255,255,.6); text-transform:uppercase; }
+  .btn-logout { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.3); padding:6px 14px; border-radius:6px; cursor:pointer; font-size:.8rem; font-weight:700; }
+  .btn-logout:hover { background:rgba(255,255,255,.3); }
+
+  /* ── Submission record tag ── */
+  .sub-tag {
+    display:inline-block; background:#eaf0fb; border:1px solid #c0d0e8;
+    border-radius:4px; padding:1px 7px; font-size:.75rem; color:var(--navy); font-weight:700;
+  }
+
+  @media (max-width:640px) {
+    header { padding:12px 14px; }
+    header .title-block h1 { font-size:1.15rem; }
+    main { padding:14px 10px; }
+    .mode-btn span { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <img src="heroes-logo.png" alt="Lake Forest Heroes">
+  </div>
+  <div class="title-block">
+    <h1>Lake Forest Heroes</h1>
+    <p>Select Evaluations 2026</p>
+  </div>
+  <div class="header-right">
+    <button class="mode-btn active" id="btn-coach-mode" onclick="setMode('coach')">⚾ Coach</button>
+    <button class="mode-btn" id="btn-manager-mode" onclick="openManagerLogin()">🔒 Manager</button>
+  </div>
+</header>
+
+<!-- Coach identity bar (coach mode only) -->
+<div class="coach-bar" id="coach-bar">
+  <label>Evaluating Coach:</label>
+  <select id="coach-select" onchange="onCoachSelectChange()" style="padding:6px 10px;border:none;border-radius:6px;font-size:.9rem;min-width:160px;display:none">
+    <option value="">— Select coach —</option>
+  </select>
+  <input type="text" id="coach-input" placeholder="Enter your name…" autocomplete="off"
+         onkeydown="if(event.key==='Enter') openCoachLogin()">
+  <button class="btn-sm" id="coach-set-btn" onclick="openCoachLogin()">Set</button>
+  <span id="coach-active"></span>
+  <span id="sync-status" class="sync-status" style="margin-left:auto"></span>
+</div>
+
+<!-- Manager login modal -->
+<div class="modal-overlay" id="manager-modal">
+  <div class="modal">
+    <h3>🔒 Manager Login</h3>
+    <p>Select your age group and enter your password.</p>
+    <div class="field" style="margin-bottom:14px">
+      <label>Age Group</label>
+      <select id="mgr-age-select" style="width:100%">
+        <option value="age9">Age 9</option>
+        <option value="age10">Age 10</option>
+        <option value="age11">Age 11</option>
+        <option value="age1213">Age 12–13</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Password</label>
+      <input type="password" id="mgr-pin-input" placeholder="Enter password…"
+             onkeydown="if(event.key==='Enter') attemptManagerLogin()">
+    </div>
+    <div class="modal-error" id="mgr-error">Incorrect password. Please try again.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeManagerModal()">Cancel</button>
+      <button class="btn-primary" onclick="attemptManagerLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Coach login / password modal -->
+<div class="modal-overlay" id="coach-login-modal">
+  <div class="modal">
+    <h3 id="coach-login-title">Set Your Password</h3>
+    <p id="coach-login-subtitle">Choose a password so only you can edit your evaluations.</p>
+    <div class="field" style="margin-bottom:14px">
+      <label id="coach-pw-label">Create Password</label>
+      <input type="password" id="coach-pw-input" placeholder="Password…"
+             onkeydown="if(event.key==='Enter') attemptCoachLogin()">
+    </div>
+    <div class="field" id="coach-pw-confirm-wrap" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
+      <label>Confirm Password</label>
+      <input type="password" id="coach-pw-confirm" placeholder="Confirm password…"
+             onkeydown="if(event.key==='Enter') attemptCoachLogin()">
+    </div>
+    <div class="modal-error" id="coach-login-error"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeCoachLoginModal()">Cancel</button>
+      <button class="btn-primary" onclick="attemptCoachLogin()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- Coach view -->
+  <div id="coach-view">
+    <div class="tabs" id="tabs"></div>
+    <div id="tab-content"></div>
+  </div>
+
+  <!-- Manager view -->
+  <div id="manager-view">
+    <div id="manager-content"></div>
+  </div>
+</main>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const MANAGER_PINS = { age9:'heroes9u', age10:'heroes10u', age11:'heroes11u', age1213:'heroes1213u' };
+
+const AGE_GROUPS = [
+  { id:'age9',    label:'Age 9',     players:[] },
+  { id:'age10',   label:'Age 10',    players:[] },
+  { id:'age11',   label:'Age 11',    players:[] },
+  { id:'age1213', label:'Age 12–13', players:[] },
+];
+
+const SKILLS = [
+  {key:'catchFlies', label:'Catch Flies', short:'CF'},
+  {key:'throwToIF',  label:'Throw to IF', short:'TIF'},
+  {key:'receiveTag', label:'Receive/Tag',  short:'R/T'},
+  {key:'fieldIF',    label:'Field IF',     short:'FIF'},
+  {key:'receive1B',  label:'Receive/1B',   short:'R1B'},
+  {key:'pitch',      label:'Pitch',        short:'Pitch'},
+  {key:'hit',        label:'Hit',          short:'Hit'},
+  {key:'run',        label:'Run',          short:'Run'},
+  {key:'ae',         label:'A&E',          short:'A&E'},
+];
+
+// ── Google Sheets backend ────────────────────────────────────────────────────
+// Paste your Apps Script deployment URL here after setup:
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwyvXCcKJq-174kMR6h6RP-En2nu9iiwgfW15a6ob7YJhZbwtTq9Yb_-V065GsAuevj/exec';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentCoach = localStorage.getItem('lfh_coach') || '';
+let currentTab   = 'age10';
+let currentMode  = 'coach';
+let allEvals     = [];
+let coachPasswords = {};
+let managerSession = null;
+let selectedSlot = 'all';
+let coachResultsView = 'individual';
+let _refreshTimer  = null;
+let editingId      = null;
+
+// ── Sheet helpers ──────────────────────────────────────────────────────────────
+function sheetReady() {
+  return SHEET_URL && SHEET_URL !== 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+}
+
+async function sheetGet(params) {
+  const url = SHEET_URL + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function sheetPost(data) {
+  // Use text/plain to avoid CORS preflight
+  await fetch(SHEET_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data),
+    redirect: 'follow',
+  });
+}
+
+function applySheetPlayers(players) {
+  AGE_GROUPS.forEach(g => { g.players = []; });
+  players.forEach(p => {
+    const g = AGE_GROUPS.find(g => g.id === p.ageId);
+    if (g) g.players.push({ first: p.first, last: p.last, time: p.time });
+  });
+}
+
+// ── Load all data from sheet ──────────────────────────────────────────────────
+async function loadData(silent = false) {
+  drainQueue();
+  if (!sheetReady()) {
+    allEvals = JSON.parse(localStorage.getItem('lfh_evals') || '[]');
+    coachPasswords = JSON.parse(localStorage.getItem('lfh_coach_passwords') || '{}');
+    return;
+  }
+  if (!silent) showSyncStatus('loading');
+  try {
+    const data = await sheetGet({ action: 'getAll' });
+    allEvals = data.evals || [];
+    coachPasswords = data.passwords || {};
+    if (data.players && data.players.length) applySheetPlayers(data.players);
+    localStorage.setItem('lfh_evals', JSON.stringify(allEvals));
+    localStorage.setItem('lfh_coach_passwords', JSON.stringify(coachPasswords));
+    localStorage.setItem('lfh_players', JSON.stringify(data.players || []));
+    if (!silent) showSyncStatus('ok');
+  } catch(e) {
+    console.warn('Sheet unavailable, using cache:', e);
+    allEvals = JSON.parse(localStorage.getItem('lfh_evals') || '[]');
+    coachPasswords = JSON.parse(localStorage.getItem('lfh_coach_passwords') || '{}');
+    const cachedPlayers = JSON.parse(localStorage.getItem('lfh_players') || '[]');
+    if (cachedPlayers.length) applySheetPlayers(cachedPlayers);
+    if (!silent) showSyncStatus('error');
+  }
+  renderCoachBar();
+  if (currentMode === 'coach') {
+    if (!silent || !formHasData()) renderContent();
+  } else if (currentMode === 'manager' && managerSession) renderManagerView();
+}
+
+function showSyncStatus(state) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.className = 'sync-status ' + state;
+  el.textContent = state === 'loading' ? '⟳ Syncing…' : state === 'ok' ? '✓ Synced' : '⚠ Offline (cached)';
+  if (state === 'ok') setTimeout(() => { if (el.textContent.startsWith('✓')) el.textContent = ''; }, 3000);
+}
+
+function formHasData() {
+  const first = document.getElementById('field-first');
+  const last  = document.getElementById('field-last');
+  if (first && (first.value.trim() || (last && last.value.trim()))) return true;
+  return SKILLS.some(sk => {
+    const el = document.getElementById(`score_${sk.key}`);
+    return el && el.value !== '';
+  });
+}
+
+function startAutoRefresh() {
+  if (_refreshTimer) clearInterval(_refreshTimer);
+  _refreshTimer = setInterval(() => loadData(true), 30000);
+}
+
+// ── Persist (local cache + sheet) ────────────────────────────────────────────
+function saveLocal() {
+  localStorage.setItem('lfh_evals', JSON.stringify(allEvals));
+  localStorage.setItem('lfh_coach', currentCoach);
+  localStorage.setItem('lfh_coach_passwords', JSON.stringify(coachPasswords));
+}
+
+function save() { saveLocal(); }
+
+// ── Offline sync queue ────────────────────────────────────────────────────────
+function enqueuePost(data) {
+  const q = JSON.parse(localStorage.getItem('lfh_sync_queue') || '[]');
+  q.push(data);
+  localStorage.setItem('lfh_sync_queue', JSON.stringify(q));
+}
+
+async function drainQueue() {
+  if (!sheetReady() || !navigator.onLine) return;
+  const q = JSON.parse(localStorage.getItem('lfh_sync_queue') || '[]');
+  if (!q.length) return;
+  showSyncStatus('loading');
+  const failed = [];
+  for (const item of q) {
+    try { await sheetPost(item); }
+    catch { failed.push(item); }
+  }
+  localStorage.setItem('lfh_sync_queue', JSON.stringify(failed));
+  showSyncStatus(failed.length ? 'error' : 'ok');
+}
+
+window.addEventListener('online', () => drainQueue());
+
+// ── Mode switching ────────────────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('coach-view').style.display    = mode === 'coach'   ? 'block' : 'none';
+  document.getElementById('manager-view').style.display  = mode === 'manager' ? 'block' : 'none';
+  document.getElementById('coach-bar').style.display     = mode === 'coach'   ? 'flex'  : 'none';
+  document.getElementById('btn-coach-mode').classList.toggle('active',   mode === 'coach');
+  document.getElementById('btn-manager-mode').classList.toggle('active', mode === 'manager');
+  if (mode === 'manager' && managerSession) renderManagerView();
+}
+
+// ── Coach login ───────────────────────────────────────────────────────────────
+function openCoachLogin() {
+  const name = document.getElementById('coach-input').value.trim();
+  if (!name) return;
+  document.getElementById('coach-login-title').textContent =
+    coachPasswords[name] ? `Welcome back, ${name}` : `Create a password for ${name}`;
+  document.getElementById('coach-login-subtitle').textContent =
+    coachPasswords[name]
+      ? 'Enter your password to continue.'
+      : 'Choose a password so only you can edit your evaluations.';
+  document.getElementById('coach-pw-label').textContent =
+    coachPasswords[name] ? 'Password' : 'Create Password';
+  document.getElementById('coach-pw-confirm-wrap').style.display =
+    coachPasswords[name] ? 'none' : 'flex';
+  document.getElementById('coach-pw-input').value = '';
+  document.getElementById('coach-pw-confirm').value = '';
+  document.getElementById('coach-login-error').style.display = 'none';
+  document.getElementById('coach-login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('coach-pw-input').focus(), 100);
+}
+
+function closeCoachLoginModal() {
+  document.getElementById('coach-login-modal').classList.remove('open');
+}
+
+function attemptCoachLogin() {
+  const name = document.getElementById('coach-input').value.trim();
+  const pw   = document.getElementById('coach-pw-input').value;
+  const conf = document.getElementById('coach-pw-confirm').value;
+  const err  = document.getElementById('coach-login-error');
+
+  if (!pw) { err.textContent = 'Please enter a password.'; err.style.display='block'; return; }
+
+  if (coachPasswords[name]) {
+    // existing coach — verify
+    if (pw !== coachPasswords[name]) {
+      err.textContent = 'Incorrect password. Please try again.';
+      err.style.display = 'block'; return;
+    }
+  } else {
+    // new coach — create password
+    if (pw !== conf) {
+      err.textContent = 'Passwords do not match.';
+      err.style.display = 'block'; return;
+    }
+    if (pw.length < 4) {
+      err.textContent = 'Password must be at least 4 characters.';
+      err.style.display = 'block'; return;
+    }
+    coachPasswords[name] = pw;
+    // Sync new password to sheet
+    if (sheetReady()) {
+      const payload = { action: 'savePassword', coach: name, password: pw };
+      sheetPost(payload).catch(() => enqueuePost(payload));
+    }
+  }
+
+  currentCoach = name;
+  localStorage.setItem('lfh_coach', currentCoach);
+  saveLocal();
+  closeCoachLoginModal();
+  renderCoachBar();
+  renderContent();
+}
+
+function coachLogout() {
+  currentCoach = '';
+  localStorage.removeItem('lfh_coach');
+  renderCoachBar();
+  renderContent();
+}
+
+function renderCoachBar() {
+  const knownCoaches = Object.keys(coachPasswords);
+  const selectEl = document.getElementById('coach-select');
+  const inputEl  = document.getElementById('coach-input');
+  const setBtn   = document.getElementById('coach-set-btn');
+  const activeEl = document.getElementById('coach-active');
+
+  // Rebuild dropdown options
+  selectEl.innerHTML = '<option value="">— Select coach —</option>' +
+    knownCoaches.map(n => `<option value="${n}" ${n===currentCoach?'selected':''}>${n}</option>`).join('') +
+    '<option value="__new__">+ New coach…</option>';
+
+  if (currentCoach) {
+    // Logged in state
+    selectEl.style.display = 'none';
+    inputEl.style.display  = 'none';
+    setBtn.style.display   = 'none';
+    activeEl.innerHTML = `✓ ${currentCoach} &nbsp;<button onclick="coachLogout()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.78rem;font-weight:700">Log Out</button>`;
+  } else if (knownCoaches.length > 0) {
+    // Show dropdown for known coaches, hide text input
+    selectEl.style.display = '';
+    inputEl.style.display  = 'none';
+    setBtn.style.display   = 'none';
+    activeEl.innerHTML = '';
+  } else {
+    // No coaches yet — show plain text input
+    selectEl.style.display = 'none';
+    inputEl.style.display  = '';
+    setBtn.style.display   = '';
+    activeEl.innerHTML = '';
+  }
+}
+
+function onCoachSelectChange() {
+  const val = document.getElementById('coach-select').value;
+  if (!val) return;
+  if (val === '__new__') {
+    // Switch to text-input mode for a new coach name
+    document.getElementById('coach-select').style.display = 'none';
+    const inputEl = document.getElementById('coach-input');
+    inputEl.style.display = '';
+    inputEl.value = '';
+    inputEl.disabled = false;
+    document.getElementById('coach-set-btn').style.display = '';
+    inputEl.focus();
+  } else {
+    // Known coach selected — open password modal
+    document.getElementById('coach-input').value = val;
+    openCoachLogin();
+  }
+}
+
+// ── Manager modal ─────────────────────────────────────────────────────────────
+function openManagerLogin() {
+  document.getElementById('manager-modal').classList.add('open');
+  document.getElementById('mgr-error').style.display = 'none';
+  document.getElementById('mgr-pin-input').value = '';
+  setTimeout(() => document.getElementById('mgr-pin-input').focus(), 100);
+}
+function closeManagerModal() {
+  document.getElementById('manager-modal').classList.remove('open');
+}
+function attemptManagerLogin() {
+  const ageId = document.getElementById('mgr-age-select').value;
+  const pin   = document.getElementById('mgr-pin-input').value.trim();
+  if (pin !== MANAGER_PINS[ageId]) { showMgrError('Incorrect password. Please try again.'); return; }
+  managerSession = { ageId, name: AGE_GROUPS.find(g => g.id === ageId).label };
+  closeManagerModal();
+  setMode('manager');
+}
+function showMgrError(msg) {
+  const el = document.getElementById('mgr-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+function managerLogout() {
+  managerSession = null;
+  setMode('coach');
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = AGE_GROUPS.map(g => `
+    <button class="tab-btn ${g.id === currentTab ? 'active' : ''}"
+            onclick="switchTab('${g.id}')">${g.label}</button>
+  `).join('');
+}
+function switchTab(id) {
+  currentTab = id; selectedSlot = 'all';
+  renderTabs(); renderContent();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function pKey(p) { return `${p.last}_${p.first}`.replace(/[^a-zA-Z0-9_]/g, '_'); }
+function getEvalsForAge(ageId) { return allEvals.filter(e => e.ageId === ageId); }
+function avg(n, denom) { return denom ? (n / denom).toFixed(2) : '—'; }
+function scoreColor(s) {
+  if (!s) return 'var(--muted)';
+  if (s >= 5) return '#22803e'; if (s >= 4) return '#1a6b99';
+  if (s >= 3) return '#b08000'; if (s >= 2) return '#c0501a';
+  return '#c8102e';
+}
+function timeSortKey(t) {
+  if (!t) return 9999;
+  const pm = t.includes('PM');
+  const [h, m] = t.replace(/[APM]/g,'').trim().split(':').map(Number);
+  return (pm && h !== 12 ? h + 12 : h) * 60 + (m || 0);
+}
+
+// ── Unique time slots for current group ───────────────────────────────────────
+function getSlots(group) {
+  const times = [...new Set(group.players.map(p => p.time).filter(Boolean))];
+  return times.sort((a, b) => timeSortKey(a) - timeSortKey(b));
+}
+
+// ── Running total from DOM ────────────────────────────────────────────────────
+function updateTotal() {
+  let total = 0, count = 0;
+  SKILLS.forEach(sk => {
+    const el = document.getElementById(`score_${sk.key}`);
+    if (el && el.value) { total += parseInt(el.value); count++; }
+  });
+  const tel = document.getElementById('score-total');
+  const ael = document.getElementById('score-avg');
+  if (tel) tel.textContent = total || '—';
+  if (ael) ael.textContent = count ? (total / SKILLS.length).toFixed(2) : '—';
+}
+
+// ── Quick-select chip ─────────────────────────────────────────────────────────
+function selectPlayer(first, last, time) {
+  const currentFirst = document.getElementById('field-first').value.trim();
+  const currentLast  = document.getElementById('field-last').value.trim();
+  const samePlayer   = currentFirst === first && currentLast === last;
+  const hasScores    = SKILLS.some(sk => { const el = document.getElementById(`score_${sk.key}`); return el && el.value !== ''; });
+  if (!samePlayer && hasScores) {
+    showPlayerSwitchPrompt(first, last, time);
+    return;
+  }
+  applyPlayerSelection(first, last, time, false);
+}
+
+function applyPlayerSelection(first, last, time, keepScores) {
+  document.getElementById('field-first').value = first;
+  document.getElementById('field-last').value  = last;
+  document.getElementById('field-time').value  = time || '';
+  document.getElementById('field-playernum').value = '';
+  if (!keepScores) {
+    SKILLS.forEach(sk => { document.getElementById(`score_${sk.key}`).value = ''; });
+    document.getElementById('field-notes').value = '';
+    document.getElementById('field-allstar').value = '';
+    updateTotal();
+  }
+  document.getElementById('field-first').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showPlayerSwitchPrompt(first, last, time) {
+  const existing = document.getElementById('player-switch-prompt');
+  if (existing) existing.remove();
+
+  const prompt = document.createElement('div');
+  prompt.id = 'player-switch-prompt';
+  prompt.style.cssText = `
+    position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999;
+    display:flex; align-items:center; justify-content:center;
+  `;
+  prompt.innerHTML = `
+    <div style="background:#fff; border-radius:12px; padding:24px 28px; max-width:380px; width:90%;
+                box-shadow:0 8px 32px rgba(0,0,0,.25); text-align:center;">
+      <div style="font-size:1.4rem; margin-bottom:8px;">⚠️</div>
+      <div style="font-weight:700; font-size:1rem; color:#0d2240; margin-bottom:6px;">Unsaved Scores</div>
+      <div style="color:#6b7a8d; font-size:.88rem; margin-bottom:20px;">
+        You have scores entered. What would you like to do when switching to
+        <strong>${first} ${last}</strong>?
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button onclick="document.getElementById('player-switch-prompt').remove(); applyPlayerSelection('${first.replace(/'/g,"\\'")}','${last.replace(/'/g,"\\'")}','${(time||'').replace(/'/g,"\\'")}', false)"
+          style="background:#c8102e;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:.9rem">
+          Switch &amp; Clear Scores
+        </button>
+        <button onclick="document.getElementById('player-switch-prompt').remove(); applyPlayerSelection('${first.replace(/'/g,"\\'")}','${last.replace(/'/g,"\\'")}','${(time||'').replace(/'/g,"\\'")}', true)"
+          style="background:#0d2240;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:.9rem">
+          Switch &amp; Keep Scores
+        </button>
+        <button onclick="document.getElementById('player-switch-prompt').remove()"
+          style="background:#eaf0fb;color:#0d2240;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:.9rem">
+          Cancel (Stay on Current Player)
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(prompt);
+}
+
+// ── Submit eval ───────────────────────────────────────────────────────────────
+function submitEval() {
+  if (!currentCoach) { alert('Please set your coach name first.'); return; }
+  const first = document.getElementById('field-first').value.trim();
+  const last  = document.getElementById('field-last').value.trim();
+  if (!first || !last) { alert('Please enter the player name.'); return; }
+  const scores = {}; let total = 0;
+  SKILLS.forEach(sk => {
+    const v = parseInt(document.getElementById(`score_${sk.key}`).value || '0');
+    scores[sk.key] = v; total += v;
+  });
+  if (total === 0) { alert('Please enter at least one score.'); return; }
+  const pk = pKey({first, last});
+  const existing = editingId ? allEvals.find(e => e.id === editingId) : null;
+  const rec = {
+    id: existing ? existing.id : Date.now(),
+    ageId: existing ? existing.ageId : currentTab,
+    playerKey: pk, first, last,
+    playerNum: document.getElementById('field-playernum').value.trim(),
+    time: document.getElementById('field-time').value,
+    allStar: document.getElementById('field-allstar').value,
+    scores, total,
+    avg: (total / SKILLS.length).toFixed(2),
+    coach: currentCoach,
+    notes: document.getElementById('field-notes').value.trim(),
+    ts: new Date().toISOString(),
+  };
+  if (existing) {
+    allEvals = allEvals.map(e => e.id === editingId ? rec : e);
+    editingId = null;
+  } else {
+    allEvals.push(rec);
+  }
+  saveLocal();
+  SKILLS.forEach(sk => { document.getElementById(`score_${sk.key}`).value = ''; });
+  document.getElementById('field-first').value = '';
+  document.getElementById('field-last').value  = '';
+  document.getElementById('field-notes').value = '';
+  document.getElementById('field-allstar').value = '';
+  document.getElementById('field-playernum').value = '';
+  document.getElementById('field-time').value = '';
+  updateTotal();
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.textContent = 'Save Evaluation'; btn.style.background = ''; }
+  renderContent();
+  // Async sync to sheet
+  if (sheetReady()) {
+    const payload = { action: 'saveEval', ...rec, ...rec.scores };
+    showSyncStatus('loading');
+    sheetPost(payload)
+      .then(() => showSyncStatus('ok'))
+      .catch(() => { enqueuePost(payload); showSyncStatus('error'); });
+  }
+}
+
+// ── Delete eval ───────────────────────────────────────────────────────────────
+function deleteEval(id) {
+  if (!confirm('Delete this evaluation?')) return;
+  allEvals = allEvals.filter(e => e.id !== id);
+  saveLocal();
+  renderContent();
+  if (sheetReady()) {
+    const payload = { action: 'deleteEval', id };
+    showSyncStatus('loading');
+    sheetPost(payload)
+      .then(() => showSyncStatus('ok'))
+      .catch(() => { enqueuePost(payload); showSyncStatus('error'); });
+  }
+}
+
+// ── Edit eval ─────────────────────────────────────────────────────────────────
+function editEval(id) {
+  const e = allEvals.find(e => e.id === id);
+  if (!e) return;
+  editingId = id;
+  document.getElementById('field-first').value = e.first;
+  document.getElementById('field-last').value  = e.last;
+  document.getElementById('field-playernum').value = e.playerNum || '';
+  document.getElementById('field-time').value  = e.time || '';
+  document.getElementById('field-allstar').value = e.allStar || '';
+  document.getElementById('field-notes').value = e.notes || '';
+  SKILLS.forEach(sk => {
+    document.getElementById(`score_${sk.key}`).value = e.scores[sk.key] || '';
+  });
+  updateTotal();
+  document.getElementById('field-first').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.textContent = '💾 Update Evaluation'; btn.style.background = 'var(--navy)'; }
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'inline-block';
+}
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('field-first').value = '';
+  document.getElementById('field-last').value  = '';
+  document.getElementById('field-playernum').value = '';
+  document.getElementById('field-time').value  = '';
+  document.getElementById('field-allstar').value = '';
+  document.getElementById('field-notes').value = '';
+  SKILLS.forEach(sk => { document.getElementById(`score_${sk.key}`).value = ''; });
+  updateTotal();
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.textContent = 'Save Evaluation'; btn.style.background = ''; }
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV(ageId) {
+  const group = AGE_GROUPS.find(g => g.id === ageId);
+  const evals = getEvalsForAge(ageId);
+  if (!evals.length) { alert('No evaluations to export yet.'); return; }
+  const header = ['Submission #','Coach','Player #','Last','First','Eval Time','All Star/Select',
+    ...SKILLS.map(s => s.label), 'Total','Avg Score','Notes','Submitted At'];
+  const rows = evals.map((e, i) => [
+    i+1, e.coach, e.playerNum||'', e.last, e.first, e.time, e.allStar,
+    ...SKILLS.map(s => e.scores[s.key] || ''),
+    e.total, e.avg, e.notes, new Date(e.ts).toLocaleString()
+  ]);
+  const csv = [header, ...rows].map(r =>
+    r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a'); a.href = url;
+  a.download = `LFH_Evals_${group.label.replace(/\W/g,'_')}_${new Date().toLocaleDateString('en-US').replace(/\//g,'-')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Build averaged summary per player ────────────────────────────────────────
+function buildSummary(evals) {
+  const map = {};
+  evals.forEach(e => {
+    if (!map[e.playerKey]) map[e.playerKey] = { first:e.first, last:e.last, allStar:e.allStar, time:e.time, subs:[] };
+    map[e.playerKey].subs.push(e);
+  });
+  const players = Object.values(map).map(p => {
+    const n = p.subs.length;
+    const avgScores = {};
+    SKILLS.forEach(sk => {
+      avgScores[sk.key] = (p.subs.reduce((s,e) => s + (e.scores[sk.key]||0), 0) / n);
+    });
+    const avgTotal = p.subs.reduce((s,e) => s + e.total, 0) / n;
+    return {
+      ...p,
+      scores: avgScores,
+      total: avgTotal,
+      avgScore: (avgTotal / SKILLS.length).toFixed(2),
+      evalCount: n,
+      coaches: [...new Set(p.subs.map(e => e.coach))].join(', '),
+    };
+  });
+  players.sort((a,b) => b.total - a.total);
+  players.forEach((p,i) => p._rank = i+1);
+  return players;
+}
+
+// ── Coach view ────────────────────────────────────────────────────────────────
+function renderContent() {
+  const group = AGE_GROUPS.find(g => g.id === currentTab);
+  const evals = getEvalsForAge(currentTab);
+
+  // results based on view toggle — coach sees only their own submissions
+  const myEvals = currentCoach ? evals.filter(e => e.coach === currentCoach) : [];
+  const summary = buildSummary(myEvals);
+  const showIndividual = coachResultsView === 'individual';
+
+  // Green chips only for players this coach has personally evaluated
+  const evaluatedKeys = new Set(myEvals.map(e => e.playerKey));
+  const slots = getSlots(group);
+  const filteredPlayers = selectedSlot === 'all'
+    ? group.players
+    : group.players.filter(p => p.time === selectedSlot);
+
+  document.getElementById('tab-content').innerHTML = `
+    ${group.players.length ? `
+    <div class="card">
+      <h2>📋 Scheduled Players — ${group.label}</h2>
+
+      <div class="slot-filter">
+        <label>Filter by time slot:</label>
+        <select onchange="selectedSlot=this.value; renderContent()">
+          <option value="all" ${selectedSlot==='all'?'selected':''}>All Time Slots</option>
+          ${slots.map(t => `<option value="${t}" ${selectedSlot===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+        <span class="slot-count">${filteredPlayers.length} player${filteredPlayers.length!==1?'s':''}</span>
+      </div>
+
+      <div class="player-chips">
+        ${filteredPlayers.length === 0
+          ? '<span style="color:var(--muted);font-size:.85rem">No players at this time slot.</span>'
+          : filteredPlayers.map(p => {
+              const pk = pKey(p);
+              const done = evaluatedKeys.has(pk);
+              const esc = s => s.replace(/'/g,"\\'");
+              return `<span class="player-chip ${done?'evaluated':''}"
+                onclick="selectPlayer('${esc(p.first)}','${esc(p.last)}','${p.time}')"
+                title="${p.time}">${p.first} ${p.last}${done?' ✓':''}</span>`;
+            }).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="card">
+      <h2>✏️ Enter Evaluation — ${group.label}</h2>
+      ${!currentCoach ? '<div class="notice">⚠️ Set your coach name at the top before submitting.</div>' : ''}
+      <div class="form-row">
+        <div class="field"><label>Player #</label><input id="field-playernum" type="text" placeholder="#…" style="width:70px"></div>
+        <div class="field"><label>First Name</label><input id="field-first" type="text" placeholder="First…" style="width:140px"></div>
+        <div class="field"><label>Last Name</label><input id="field-last" type="text" placeholder="Last…" style="width:140px"></div>
+        <div class="field"><label>Eval Time</label><input id="field-time" type="text" placeholder="e.g. 10:20 AM" style="width:115px"></div>
+        <div class="field">
+          <label>All-Star / Select</label>
+          <select id="field-allstar" style="width:105px">
+            <option value="">—</option>
+            <option>Select</option><option>All-Star</option><option>Both</option>
+          </select>
+        </div>
+      </div>
+      <div class="skills-grid">
+        ${SKILLS.map(sk => `
+          <div class="field narrow">
+            <label>${sk.label}</label>
+            <select class="score" id="score_${sk.key}" onchange="updateTotal()">
+              <option value="">—</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
+          </div>`).join('')}
+        <div class="totals-box">
+          <div><div class="t-label">Total</div><div class="t-val" id="score-total">—</div></div>
+          <div class="totals-divider"></div>
+          <div><div class="t-label">Avg/Skill</div><div class="t-val" id="score-avg">—</div></div>
+        </div>
+      </div>
+      <div class="form-row" style="align-items:flex-start">
+        <div class="field" style="flex:1;min-width:260px">
+          <label>Notes (optional)</label>
+          <textarea id="field-notes" placeholder="Any comments…"
+            style="width:100%;height:68px;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.9rem;font-family:inherit;color:var(--text)"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px;align-items:center">
+          <button id="submit-btn" class="btn-primary" onclick="submitEval()">Save Evaluation</button>
+          <button id="cancel-edit-btn" class="btn-sm" onclick="cancelEdit()" style="display:none;background:#888">Cancel Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="results-toolbar">
+        <h2>🏆 My Submissions — ${group.label}
+          <span style="font-size:.78rem;font-weight:400;color:var(--muted);margin-left:8px">
+            ${myEvals.length} submission${myEvals.length!==1?'s':''} · ${summary.length} player${summary.length!==1?'s':''}
+          </span>
+        </h2>
+        <div class="view-toggle">
+          <button class="${showIndividual?'active':''}" onclick="coachResultsView='individual';renderContent()">By Submission</button>
+          <button class="${!showIndividual?'active':''}" onclick="coachResultsView='summary';renderContent()">Summary</button>
+        </div>
+        <button class="btn-export" onclick="exportCSV('${currentTab}')">⬇ CSV</button>
+      </div>
+
+      ${myEvals.length === 0
+        ? `<div class="empty-state">${currentCoach ? 'No evaluations submitted by you yet.' : 'Set your coach name above, then submit an evaluation.'}</div>`
+        : showIndividual ? renderIndividualTable(myEvals) : renderSummaryTable(buildSummary(myEvals))
+      }
+    </div>
+  `;
+}
+
+function renderIndividualTable(evals) {
+  // Build a rank lookup by playerKey from the averaged summary so rank is consistent
+  const summary = buildSummary(evals);
+  const rankMap = {};
+  summary.forEach(p => { rankMap[p.first + '_' + p.last] = p._rank; });
+
+  // Sort by averaged rank (best player first), then by submission time within same player
+  const sorted = [...evals].sort((a,b) => {
+    const ra = rankMap[a.first+'_'+a.last] || 9999;
+    const rb = rankMap[b.first+'_'+b.last] || 9999;
+    if (ra !== rb) return ra - rb;
+    return a.id - b.id;
+  });
+
+  return `
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th class="center">Rank</th><th class="center">#</th><th>Player</th><th class="center">Time</th><th class="center">Select?</th>
+        ${SKILLS.map(s=>`<th class="center" title="${s.label}">${s.short}</th>`).join('')}
+        <th class="center">Total</th><th class="center avg-col">Avg</th>
+        <th>Coach</th><th>Notes</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map(e => {
+          const rank = rankMap[e.first+'_'+e.last] || '—';
+          return `
+          <tr>
+            <td class="center">
+              <span class="rank-badge rank-${rank<=3?rank:'other'}">${rank}</span>
+            </td>
+            <td class="center" style="color:var(--muted);font-size:.8rem;font-weight:700">${e.playerNum||'—'}</td>
+            <td><strong>${e.last}</strong>, ${e.first}</td>
+            <td class="center" style="color:var(--muted);font-size:.8rem">${e.time||'—'}</td>
+            <td class="center ${e.allStar?'allstar-yes':''}">${e.allStar||'—'}</td>
+            ${SKILLS.map(s=>`
+              <td class="score-cell" style="color:${scoreColor(e.scores[s.key])}">
+                ${e.scores[s.key]||'—'}</td>`).join('')}
+            <td class="total-cell">${e.total}</td>
+            <td class="avg-cell">${e.avg}</td>
+            <td class="coach-cell">${e.coach}</td>
+            <td style="max-width:140px;white-space:normal;font-size:.8rem">${e.notes||'—'}</td>
+            <td style="white-space:nowrap">${e.coach === currentCoach ? `
+              <button class="btn-sm" onclick="editEval(${e.id})" style="background:var(--navy);margin-right:4px">✏</button>
+              <button class="btn-danger" onclick="deleteEval(${e.id})">✕</button>` : ''}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+function renderSummaryTable(summary) {
+  return `
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th class="center">Rank</th><th>Player</th><th class="center">Evals</th><th class="center">Select?</th>
+        ${SKILLS.map(s=>`<th class="center" title="${s.label}">${s.short}</th>`).join('')}
+        <th class="center">Avg Total</th><th class="center avg-col">Avg/Skill</th>
+        <th>Coaches</th>
+      </tr></thead>
+      <tbody>
+        ${summary.map(p=>`
+          <tr>
+            <td class="center">
+              <span class="rank-badge rank-${p._rank<=3?p._rank:'other'}">${p._rank}</span></td>
+            <td><strong>${p.last}</strong>, ${p.first}</td>
+            <td class="center"><span class="sub-tag">${p.evalCount}</span></td>
+            <td class="center ${p.allStar?'allstar-yes':''}">${p.allStar||'—'}</td>
+            ${SKILLS.map(s=>`
+              <td class="score-cell" style="color:${scoreColor(Math.round(p.scores[s.key]))}">
+                ${p.scores[s.key]?p.scores[s.key].toFixed(1):'—'}</td>`).join('')}
+            <td class="total-cell">${p.total.toFixed(1)}</td>
+            <td class="avg-cell">${p.avgScore}</td>
+            <td class="coach-cell">${p.coaches}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ── Manager view ──────────────────────────────────────────────────────────────
+function renderManagerView() {
+  if (!managerSession) return;
+  const { ageId, name } = managerSession;
+  const group  = AGE_GROUPS.find(g => g.id === ageId);
+  const evals  = getEvalsForAge(ageId);
+  const summary = buildSummary(evals);
+  const coaches = [...new Set(evals.map(e => e.coach))];
+
+  // Group evals by player for the detail view
+  const byPlayer = {};
+  evals.forEach(e => {
+    if (!byPlayer[e.playerKey]) byPlayer[e.playerKey] = { first:e.first, last:e.last, time:e.time, subs:[] };
+    byPlayer[e.playerKey].subs.push(e);
+  });
+
+  document.getElementById('manager-content').innerHTML = `
+    <div class="manager-header">
+      <img src="heroes-logo.png" style="width:50px;height:50px;object-fit:contain;border-radius:6px" alt="">
+      <div class="mh-info">
+        <h3>Manager View — ${group.label}</h3>
+        <p>Logged in as ${name} &nbsp;·&nbsp; All coach submissions visible</p>
+      </div>
+      <div class="mh-stats">
+        <div><div class="stat-val">${evals.length}</div><div class="stat-label">Submissions</div></div>
+        <div><div class="stat-val">${summary.length}</div><div class="stat-label">Players</div></div>
+        <div><div class="stat-val">${coaches.length}</div><div class="stat-label">Coaches</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-left:16px">
+        <button class="btn-export" onclick="exportCSV('${ageId}')">⬇ Export CSV</button>
+        <button class="btn-logout" onclick="managerLogout()">Log Out</button>
+      </div>
+    </div>
+
+    <!-- Ranked summary -->
+    <div class="card">
+      <h2>🏆 Player Rankings — ${group.label}</h2>
+      ${summary.length === 0
+        ? '<div class="empty-state">No evaluations submitted yet for this age group.</div>'
+        : `<div class="table-wrap"><table>
+          <thead><tr>
+            <th class="center">Rank</th><th>Player</th><th class="center">Time</th>
+            <th class="center">Evals</th><th class="center">Select?</th>
+            ${SKILLS.map(s=>`<th class="center avg-col" title="${s.label}">${s.short}</th>`).join('')}
+            <th class="center">Avg Total</th><th class="center avg-col">Avg/Skill</th>
+            <th>Coaches</th>
+          </tr></thead>
+          <tbody>
+            ${summary.map(p=>`
+              <tr>
+                <td class="center">
+                  <span class="rank-badge rank-${p._rank<=3?p._rank:'other'}">${p._rank}</span></td>
+                <td><strong>${p.last}</strong>, ${p.first}</td>
+                <td class="center" style="font-size:.8rem;color:var(--muted)">${p.time||'—'}</td>
+                <td class="center"><span class="sub-tag">${p.evalCount}</span></td>
+                <td class="center ${p.allStar?'allstar-yes':''}">${p.allStar||'—'}</td>
+                ${SKILLS.map(s=>`
+                  <td class="score-cell" style="color:${scoreColor(Math.round(p.scores[s.key]))}">
+                    ${p.scores[s.key]?p.scores[s.key].toFixed(1):'—'}</td>`).join('')}
+                <td class="total-cell">${p.total.toFixed(1)}</td>
+                <td class="avg-cell">${p.avgScore}</td>
+                <td class="coach-cell" style="white-space:normal">${p.coaches}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table></div>`
+      }
+    </div>
+
+    <!-- Individual submissions per player -->
+    <div class="card">
+      <h2>📋 All Coach Submissions — ${group.label}</h2>
+      ${evals.length === 0
+        ? '<div class="empty-state">No submissions yet.</div>'
+        : Object.values(byPlayer).sort((a,b)=>timeSortKey(a.time)-timeSortKey(b.time)).map(p => `
+          <div style="margin-bottom:20px">
+            <div style="font-weight:800;font-size:.95rem;color:var(--navy);padding:6px 0 6px;border-bottom:2px solid var(--gold);margin-bottom:8px">
+              ${p.last}, ${p.first}
+              <span style="font-weight:400;color:var(--muted);font-size:.8rem;margin-left:8px">${p.time||''}</span>
+              <span class="sub-tag" style="margin-left:8px">${p.subs.length} eval${p.subs.length!==1?'s':''}</span>
+            </div>
+            <div class="table-wrap"><table>
+              <thead><tr>
+                <th>Coach</th><th class="center">#</th><th class="center">Select?</th>
+                ${SKILLS.map(s=>`<th class="center" title="${s.label}">${s.short}</th>`).join('')}
+                <th class="center">Total</th><th class="center avg-col">Avg</th>
+                <th>Notes</th><th>Time</th>
+              </tr></thead>
+              <tbody>
+                ${p.subs.map(e=>`
+                  <tr>
+                    <td style="font-weight:700">${e.coach}</td>
+                    <td class="center" style="color:var(--muted);font-weight:700;font-size:.8rem">${e.playerNum||'—'}</td>
+                    <td class="center ${e.allStar?'allstar-yes':''}">${e.allStar||'—'}</td>
+                    ${SKILLS.map(s=>`
+                      <td class="score-cell" style="color:${scoreColor(e.scores[s.key])}">
+                        ${e.scores[s.key]||'—'}</td>`).join('')}
+                    <td class="total-cell">${e.total}</td>
+                    <td class="avg-cell">${e.avg}</td>
+                    <td style="max-width:140px;white-space:normal;font-size:.8rem">${e.notes||'—'}</td>
+                    <td style="font-size:.78rem;color:var(--muted)">${new Date(e.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table></div>
+          </div>`).join('')
+      }
+    </div>
+  `;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderTabs();
+loadData().then(() => {
+  // Restore logged-in coach if their password is still known
+  if (currentCoach && coachPasswords[currentCoach]) {
+    document.getElementById('coach-input').disabled = true;
+    document.getElementById('coach-set-btn').style.display = 'none';
+  } else if (currentCoach && !coachPasswords[currentCoach]) {
+    // Password not loaded yet — keep logged in from localStorage session
+  }
+  renderCoachBar();
+  renderContent();
+  startAutoRefresh();
+});
+
+// ── PWA manifest (inline so no separate file needed) ─────────────────────────
+(function() {
+  const manifest = {
+    name: 'Lake Forest Heroes Evaluations',
+    short_name: 'LFH Evals',
+    description: 'Select & All-Star player evaluations for Lake Forest Heroes',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#0d2240',
+    theme_color: '#0d2240',
+    icons: [
+      { src: 'heroes-logo.png', sizes: '192x192', type: 'image/png' },
+      { src: 'heroes-logo.png', sizes: '512x512', type: 'image/png' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+})();
+
+// ── Service worker (offline cache) ───────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'lfh-evals-v1';
+const ASSETS = ['./', './lakeforest-heroes-evaluations.html', './heroes-logo.png'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  if (e.request.url.includes('script.google.com')) return;
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+    const clone = res.clone();
+    caches.open(CACHE).then(c => c.put(e.request, clone));
+    return res;
+  }).catch(() => cached)));
+});
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+}
+</script>
+</body>
+</html>
