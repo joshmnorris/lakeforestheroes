@@ -453,6 +453,23 @@ async function loadData(silent = false) {
   } else if (currentMode === 'manager' && managerSession) renderManagerView();
 }
 
+function showToast(msg, color) {
+  const existing = document.getElementById('lfh-toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.id = 'lfh-toast';
+  t.textContent = msg;
+  t.style.cssText = `
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    background:${color||'#22803e'}; color:#fff; font-weight:700; font-size:.95rem;
+    padding:12px 28px; border-radius:30px; box-shadow:0 4px 16px rgba(0,0,0,.25);
+    z-index:99999; opacity:1; transition:opacity .4s;
+    white-space:nowrap;
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2200);
+}
+
 function showSyncStatus(state) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -827,8 +844,10 @@ function submitEval() {
   if (existing) {
     allEvals = allEvals.map(e => e.id === editingId ? rec : e);
     editingId = null;
+    showToast(`✅ ${first} ${last} updated!`);
   } else {
     allEvals.push(rec);
+    showToast(`✅ ${first} ${last} saved!`);
   }
   saveLocal();
   SKILLS.forEach(sk => { document.getElementById(`score_${sk.key}`).value = ''; });
