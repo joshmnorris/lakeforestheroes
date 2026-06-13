@@ -214,6 +214,21 @@
   .empty-state { text-align:center; padding:36px 20px; color:var(--muted); font-size:.92rem; }
 
   /* ── Manager modal ── */
+  /* Rubric help button */
+  .rubric-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; background:var(--navy); color:#fff;
+    font-size:.75rem; font-weight:800; cursor:pointer; border:none;
+    vertical-align:middle; margin-left:6px; flex-shrink:0;
+  }
+  .rubric-btn:hover { background:var(--red); }
+  /* Rubric modal specifics */
+  .rubric-modal { max-width:560px; max-height:85vh; overflow-y:auto; }
+  .rubric-skill { margin-bottom:18px; }
+  .rubric-skill h4 { font-size:.9rem; color:var(--navy); font-weight:800; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:4px; }
+  .rubric-row { display:flex; gap:8px; align-items:baseline; margin-bottom:3px; font-size:.82rem; }
+  .rubric-score { font-weight:800; color:var(--navy); width:16px; flex-shrink:0; }
+
   .modal-overlay {
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,.55); z-index:1000; align-items:center; justify-content:center;
@@ -336,6 +351,99 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeCoachLoginModal()">Cancel</button>
       <button class="btn-primary" onclick="attemptCoachLogin()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scoring Rubric Modal -->
+<div class="modal-overlay" id="rubric-modal" onclick="if(event.target===this)closeRubric()">
+  <div class="modal rubric-modal">
+    <h3>📋 Scoring Rubric — 1 to 5</h3>
+    <p>Use these descriptions as a guide when scoring each skill.</p>
+
+    <div class="rubric-skill">
+      <h4>Catch Flies (CF)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Misjudges most fly balls, poor positioning</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Struggles with tracking, occasional catches</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Catches routine fly balls consistently</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Good reads, handles most difficulty levels</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite range, tracks and catches all types</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Throw to IF (TIF)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Inaccurate, weak arm, poor mechanics</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Inconsistent accuracy, below-average arm</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Accurate throws on routine plays</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Strong, accurate throws consistently</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite arm strength and accuracy under pressure</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Receive / Tag (R/T)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Mishandles most throws, poor tag technique</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Struggles receiving, inconsistent tags</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Handles routine throws, applies basic tags</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Soft hands, reliable tags on close plays</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite receiving, quick secure tags in all situations</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Field IF (FIF)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Poor footwork, misfields grounders routinely</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Handles only easy grounders, slow reactions</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Fields routine grounders consistently</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Good range and footwork, handles tough hops</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite range, sure hands, exceptional footwork</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Receive / 1B (R1B)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Misses most throws, poor stretch technique</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Inconsistent, struggles with difficult throws</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Handles routine throws at first</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Stretches well, scoops difficult throws</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite at first, saves arrant throws routinely</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Pitch</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Poor mechanics, no command or velocity</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Below average velocity, limited command</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Average velocity, throws strikes consistently</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Good velocity and movement, above-average command</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite velocity, sharp movement, pinpoint command</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Hit</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Poor mechanics, can't make consistent contact</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Weak contact, easily fooled by pitching</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Makes consistent contact, average power</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Hard contact consistently, recognizes pitches well</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite contact and power, commands the strike zone</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>Run</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Significantly below average speed and instincts</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Below average speed, slow first step</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Average speed, adequate base running</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Above average speed, smart base runner</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite speed and instincts, game-changing runner</span></div>
+    </div>
+
+    <div class="rubric-skill">
+      <h4>A&amp;E (Athleticism &amp; Effort)</h4>
+      <div class="rubric-row"><span class="rubric-score">1</span><span>Poor athleticism, disengaged demeanor</span></div>
+      <div class="rubric-row"><span class="rubric-score">2</span><span>Below average athleticism, limited energy</span></div>
+      <div class="rubric-row"><span class="rubric-score">3</span><span>Average athlete, engaged during evaluation</span></div>
+      <div class="rubric-row"><span class="rubric-score">4</span><span>Strong athlete, positive and coachable</span></div>
+      <div class="rubric-row"><span class="rubric-score">5</span><span>Elite athleticism, exceptional effort and energy</span></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeRubric()">Got it</button>
     </div>
   </div>
 </div>
@@ -608,6 +716,9 @@ function coachLogout() {
   renderContent();
 }
 
+function openRubric()  { document.getElementById('rubric-modal').classList.add('open'); }
+function closeRubric() { document.getElementById('rubric-modal').classList.remove('open'); }
+
 function focusCoachBar() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   const bar = document.getElementById('coach-bar');
@@ -829,7 +940,7 @@ function submitEval() {
   const pk = pKey({first, last});
   const existing = editingId ? allEvals.find(e => e.id === editingId) : null;
   const rec = {
-    id: existing ? existing.id : Date.now(),
+    id: existing ? existing.id : `${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
     ageId: existing ? existing.ageId : currentTab,
     playerKey: pk, first, last,
     playerNum: document.getElementById('field-playernum').value.trim(),
@@ -1034,7 +1145,7 @@ function renderContent() {
     </div>` : ''}
 
     <div class="card">
-      <h2>✏️ Enter Evaluation — ${group.label}</h2>
+      <h2>✏️ Enter Evaluation — ${group.label} <button class="rubric-btn" onclick="openRubric()" title="Scoring Rubric">?</button></h2>
       ${!currentCoach ? '<div class="notice">⚠️ Set your coach name at the top before submitting.</div>' : ''}
       <div class="form-row">
         <div class="field"><label>Player #</label><input id="field-playernum" type="text" placeholder="#…" style="width:70px"></div>
